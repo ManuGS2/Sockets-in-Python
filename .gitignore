@@ -1,0 +1,3 @@
+# Ignoramos los archivos de configuracion
+_pycache_/
+.vscode/
