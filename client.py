@@ -5,10 +5,11 @@ HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
 PORT = 65432        # Port to listen on (non-privileged ports are > 1023)
 BUFFER = 1024
 
-def msgFromServ(server):
-    while True:
-        msg = server.recv(BUFFER)
-        print("Server> "+str(msg))
+def msgFromServ(server, thread):
+    while thread.is_alive():
+        msg = server.recv(BUFFER).decode("utf-8")
+        print("\nServer> "+msg)
+    server.close()
 
 def msgToServ(client):
     while True:
@@ -19,16 +20,14 @@ def msgToServ(client):
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as cl:
     cl.connect((HOST, PORT))
-    thrCl = Thread(target=msgFromServ, args=(cl,))
-    thrSrv = Thread(target=msgToServ, args=(cl,))
-    thrCl.start()
-    thrSrv.start()
-    thrCl.join()
-    thrSrv.join()
+    
+    toServ = Thread(target=msgToServ, args=(cl,))
+    fromServ = Thread(target=msgFromServ, args=(cl,toServ))
+    toServ.start()
+    fromServ.start()
 
-    while True:
-        msg = input()
-        
-    data = cl.recv(1024)
-
-print('Received', repr(data))
+    toServ.join()
+    print("to Serv")
+    fromServ.join()
+    print("frpm Seerv")
+    
